@@ -1,12 +1,600 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cálculo de Vale Transporte</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Vale Transporte · Florianópolis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --primary: #1a6b4a;
+    --primary-light: #e8f5ef;
+    --accent: #2ecc71;
+    --text: #1a2332;
+    --muted: #7a8fa6;
+    --border: #dde4ed;
+    --result-bg: #1a6b4a;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px 40px;
+    color: var(--text);
+  }
+
+  .container {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+    padding-top: 8px;
+  }
+
+  .logo-icon {
+    width: 52px;
+    height: 52px;
+    background: var(--primary);
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    font-size: 24px;
+  }
+
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  header p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+
+  .field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .month-nav button {
+    width: 40px;
+    height: 40px;
+    border: 1.5px solid var(--border);
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text);
+    flex-shrink: 0;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .month-nav button:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  .month-display {
+    flex: 1;
+    text-align: center;
+    background: var(--primary-light);
+    border-radius: 12px;
+    padding: 10px;
+  }
+
+  .month-display .month-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--primary);
+    text-transform: capitalize;
+  }
+
+  .month-display .year-name {
+    font-size: 12px;
+    color: var(--primary);
+    opacity: 0.7;
+    margin-top: 1px;
+  }
+
+  .price-input-wrap {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .currency-prefix {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    height: 48px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 0 14px 0 40px;
+    font-size: 18px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--text);
+    background: white;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  input[type="number"]:focus {
+    border-color: var(--primary);
+  }
+
+  .trips-row {
+    margin-bottom: 4px;
+  }
+
+  .trips-options {
+    display: flex;
+    gap: 8px;
+  }
+
+  .trip-btn {
+    flex: 1;
+    height: 44px;
+    border: 1.5px solid var(--border);
+    background: white;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .trip-btn.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+
+  .info-row .label {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .info-row .value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .info-row .value.highlight {
+    color: var(--primary);
+  }
+
+  .result-card {
+    background: var(--result-bg);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(26,107,74,0.25);
+  }
+
+  .result-card .result-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 8px;
+  }
+
+  .result-card .result-value {
+    font-size: 40px;
+    font-weight: 600;
+    color: white;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .result-card .result-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 10px;
+  }
+
+  .holidays-list {
+    margin-top: 4px;
+  }
+
+  .holiday-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .holiday-item:last-child { border-bottom: none; }
+
+  .holiday-item .h-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    width: 60px;
+    flex-shrink: 0;
+  }
+
+  .holiday-item .h-name {
+    color: var(--text);
+    flex: 1;
+  }
+
+  .holiday-item .h-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .badge-nacional { background: #e8f0fe; color: #3b6ddb; }
+  .badge-estadual { background: #fce8f3; color: #c0397a; }
+  .badge-municipal { background: #e8f5ef; color: #1a6b4a; }
+
+  .no-holidays {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+
+  .year-range-note {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: -8px;
+    margin-bottom: 16px;
+  }
+
+
+  .footer {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+
+  .footer a {
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.3px;
+    transition: color 0.15s;
+  }
+
+  .footer a:hover { color: var(--primary); }
+</style>
 </head>
 <body>
-    <h1>Cálculo de Vale Transporte</h1>
-    <p>Sua calculadora de vale transporte está no ar!</p>
+<div class="container">
+  <header>
+    <div class="logo-icon">🚌</div>
+    <h1>Vale Transporte</h1>
+    <p>Florianópolis · SC</p>
+  </header>
+
+  <div class="card">
+    <div class="field-label">Mês de referência</div>
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">‹</button>
+      <div class="month-display">
+        <div class="month-name" id="monthName"></div>
+        <div class="year-name" id="yearName"></div>
+      </div>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+
+    <div class="field-label">Valor da passagem</div>
+    <div class="price-input-wrap">
+      <span class="currency-prefix">R$</span>
+      <input type="number" id="passagem" placeholder="0,00" step="0.01" min="0" oninput="calcular()">
+    </div>
+
+    <div class="trips-row">
+      <div class="field-label">Passagens por dia</div>
+      <div class="trips-options">
+        <button class="trip-btn active" id="btn2" onclick="setTrips(2)">2 passagens</button>
+        <button class="trip-btn" id="btn4" onclick="setTrips(4)">4 passagens</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="info-row">
+      <span class="label">📅 Dias no mês</span>
+      <span class="value" id="diasMes">—</span>
+    </div>
+    <div class="info-row">
+      <span class="label">🚫 Fins de semana</span>
+      <span class="value" id="fimDeSemana">—</span>
+    </div>
+    <div class="info-row">
+      <span class="label">🎉 Feriados (dias úteis)</span>
+      <span class="value highlight" id="feriadosCount">—</span>
+    </div>
+    <div class="divider"></div>
+    <div class="info-row">
+      <span class="label" style="font-weight:600;color:var(--text)">✅ Dias úteis</span>
+      <span class="value highlight" id="diasUteis" style="font-size:18px">—</span>
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-label">Total do Vale Transporte</div>
+    <div class="result-value" id="resultValue">R$ —</div>
+    <div class="result-sub" id="resultSub"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="section-title">Feriados do mês</div>
+    <div class="holidays-list" id="holidaysList"></div>
+  </div>
+
+  <div class="footer">
+    <a href="https://github.com/Dimbao-Reri" target="_blank">by dimbao</a>
+  </div>
+</div>
+
+<script>
+// ─── FERIADOS FLORIANÓPOLIS ──────────────────────────────────────────────────
+// Formato: 'YYYY-MM-DD' → { nome, tipo }
+// tipo: 'nacional' | 'estadual' | 'municipal'
+
+const FERIADOS = {};
+
+function addF(data, nome, tipo) {
+  FERIADOS[data] = { nome, tipo };
+}
+
+// Páscoa (algoritmo de Meeus/Jones/Butcher)
+function calcPascoa(ano) {
+  const a = ano % 19, b = Math.floor(ano/100), c = ano % 100;
+  const d = Math.floor(b/4), e = b % 4;
+  const f = Math.floor((b+8)/25), g = Math.floor((b-f+1)/3);
+  const h = (19*a + b - d - g + 15) % 30;
+  const i = Math.floor(c/4), k = c % 4;
+  const l = (32 + 2*e + 2*i - h - k) % 7;
+  const m = Math.floor((a + 11*h + 22*l) / 451);
+  const mes = Math.floor((h + l - 7*m + 114) / 31);
+  const dia = ((h + l - 7*m + 114) % 31) + 1;
+  return new Date(ano, mes-1, dia);
+}
+
+function addDias(data, dias) {
+  const d = new Date(data);
+  d.setDate(d.getDate() + dias);
+  return d;
+}
+
+function fmt(d) {
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+}
+
+function carregarAno(ano) {
+  // Fixos nacionais
+  addF(`${ano}-01-01`, 'Confraternização Universal', 'nacional');
+  addF(`${ano}-04-21`, 'Tiradentes', 'nacional');
+  addF(`${ano}-05-01`, 'Dia do Trabalho', 'nacional');
+  addF(`${ano}-09-07`, 'Independência do Brasil', 'nacional');
+  addF(`${ano}-10-12`, 'Nossa Senhora Aparecida', 'nacional');
+  addF(`${ano}-11-02`, 'Finados', 'nacional');
+  addF(`${ano}-11-15`, 'Proclamação da República', 'nacional');
+  addF(`${ano}-11-20`, 'Consciência Negra', 'nacional');
+  addF(`${ano}-12-25`, 'Natal', 'nacional');
+
+  // Páscoa e derivados
+  const pascoa = calcPascoa(ano);
+  addF(fmt(addDias(pascoa, -48)), 'Carnaval (Segunda)', 'nacional');
+  addF(fmt(addDias(pascoa, -47)), 'Carnaval (Terça)', 'nacional');
+  addF(fmt(addDias(pascoa, -2)),  'Sexta-feira Santa', 'nacional');
+  addF(fmt(pascoa),               'Páscoa', 'nacional');
+  addF(fmt(addDias(pascoa, 60)),  'Corpus Christi', 'municipal');
+
+  // Estadual SC - Data Magna 11/08 (se domingo, vai pro domingo mesmo; se útil, é feriado)
+  const dataMagna = new Date(ano, 7, 11);
+  if (dataMagna.getDay() !== 0) { // não é domingo
+    addF(`${ano}-08-11`, 'Data Magna de Santa Catarina', 'estadual');
+  }
+
+  // Municipal Florianópolis
+  // Paixão de Cristo (Sexta-Santa) já incluída acima como municipal tbm — Floripa tem ambos
+  // Aniversário de Florianópolis: 23/03 (lei municipal - incluso)
+  addF(`${ano}-03-23`, 'Aniversário de Florianópolis', 'municipal');
+}
+
+// Carregar 2025 a 2030
+[2025, 2026, 2027, 2028, 2029, 2030].forEach(carregarAno);
+
+// ─── ESTADO ─────────────────────────────────────────────────────────────────
+
+let currentDate = new Date();
+let currentMonth = currentDate.getMonth();
+let currentYear = currentDate.getFullYear();
+let tripsPerDay = 2;
+
+const MONTHS = [
+  'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
+];
+
+// ─── LÓGICA ──────────────────────────────────────────────────────────────────
+
+function getDiasUteis(ano, mes) {
+  const dias = new Date(ano, mes+1, 0).getDate();
+  let uteis = 0;
+  const feriadosNoMes = [];
+
+  for (let d = 1; d <= dias; d++) {
+    const date = new Date(ano, mes, d);
+    const dow = date.getDay();
+    const key = fmt(date);
+    const isFimSemana = dow === 0 || dow === 6;
+    const isFeriado = !!FERIADOS[key];
+
+    if (!isFimSemana && isFeriado) {
+      feriadosNoMes.push({ dia: d, ...FERIADOS[key], dow });
+    }
+
+    if (!isFimSemana && !isFeriado) uteis++;
+  }
+
+  const totalFimSemana = Array.from({length: dias}, (_,i) => {
+    const d = new Date(ano, mes, i+1).getDay();
+    return d === 0 || d === 6;
+  }).filter(Boolean).length;
+
+  return { uteis, feriados: feriadosNoMes, totalDias: dias, totalFimSemana };
+}
+
+function calcular() {
+  const passagem = parseFloat(document.getElementById('passagem').value) || 0;
+  const { uteis, feriados, totalDias, totalFimSemana } = getDiasUteis(currentYear, currentMonth);
+
+  document.getElementById('diasMes').textContent = totalDias;
+  document.getElementById('fimDeSemana').textContent = totalFimSemana;
+  document.getElementById('feriadosCount').textContent = feriados.length;
+  document.getElementById('diasUteis').textContent = uteis;
+
+  const total = uteis * tripsPerDay * passagem;
+  const resultValue = document.getElementById('resultValue');
+
+  if (passagem > 0) {
+    resultValue.textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    document.getElementById('resultSub').textContent =
+      `${uteis} dias × ${tripsPerDay} passagens × R$ ${passagem.toFixed(2).replace('.',',')}`;
+  } else {
+    resultValue.textContent = 'R$ —';
+    document.getElementById('resultSub').textContent = 'Informe o valor da passagem';
+  }
+
+  // Feriados do mês
+  const list = document.getElementById('holidaysList');
+  if (feriados.length === 0) {
+    list.innerHTML = '<div class="no-holidays">Nenhum feriado em dia útil neste mês 🎉</div>';
+  } else {
+    const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    list.innerHTML = feriados.map(f => `
+      <div class="holiday-item">
+        <span class="h-date">${String(f.dia).padStart(2,'0')}/${String(currentMonth+1).padStart(2,'0')} ${dias[f.dow]}</span>
+        <span class="h-name">${f.nome}</span>
+        <span class="h-badge badge-${f.tipo}">${f.tipo}</span>
+      </div>
+    `).join('');
+  }
+}
+
+function changeMonth(dir) {
+  currentMonth += dir;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+
+  // Limita entre 2025 e 2030
+  if (currentYear < 2025) { currentYear = 2025; currentMonth = 0; }
+  if (currentYear > 2030) { currentYear = 2030; currentMonth = 11; }
+
+  document.getElementById('monthName').textContent = MONTHS[currentMonth];
+  document.getElementById('yearName').textContent = currentYear;
+  calcular();
+}
+
+function setTrips(n) {
+  tripsPerDay = n;
+  document.getElementById('btn2').classList.toggle('active', n === 2);
+  document.getElementById('btn4').classList.toggle('active', n === 4);
+  calcular();
+}
+
+// Init
+document.getElementById('monthName').textContent = MONTHS[currentMonth];
+document.getElementById('yearName').textContent = currentYear;
+calcular();
+</script>
+
 </body>
 </html>
